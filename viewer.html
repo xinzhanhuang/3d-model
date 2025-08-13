@@ -1,32 +1,79 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D 模型预览</title>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <meta charset="utf-8">
+  <title>模型预览</title>
+  <!-- 国内 CDN，稳定访问 -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    body, html { margin:0; height:100%; }
-    model-viewer { width: 100vw; height: 100vh; }
+    body { margin: 0; background: #000; font-family: sans-serif; }
+    model-viewer {
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+    }
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+      color: black;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-  <model-viewer id="viewer"
-    alt="3D 模型预览"
-    camera-controls
-    auto-rotate
-    background-color="#455A64"
-    shadow-intensity="1">
-  </model-viewer>
+  <a class="back-btn" href="index.html">返回</a>
+
+  <model-viewer id="viewer" ar autoplay camera-controls></model-viewer>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const modelPath = urlParams.get('model');
-    if (modelPath) {
-      document.getElementById('viewer').setAttribute('src', modelPath);
-    } else {
-      document.body.innerHTML = "<h2>未选择模型</h2>";
+    const viewer = document.getElementById('viewer');
+    const params = new URLSearchParams(window.location.search);
+    const defaultModel = '/models/model1.usdz'; // 默认模型
+    const modelPath = params.get('model') || defaultModel;
+
+    let retryCount = 0;
+    const maxRetries = 3;  // 最大重试次数
+    const timeout = 5000;  // 5秒没有加载成功就重试
+
+    function loadModel() {
+      viewer.setAttribute('src', modelPath);
+
+      const timer = setTimeout(() => {
+        // 如果模型 src 未加载或加载失败
+        if (!viewer.getAttribute('src')) {
+          retryCount++;
+          if (retryCount <= maxRetries) {
+            console.warn(`模型加载失败，正在重试 ${retryCount} 次...`);
+            loadModel();
+          } else {
+            alert('模型加载失败，请检查网络或稍后重试');
+            viewer.setAttribute('src', defaultModel); // 尝试加载默认模型
+          }
+        }
+      }, timeout);
+
+      // 模型成功加载时取消定时器
+      viewer.addEventListener('load', () => clearTimeout(timer), { once: true });
+
+      // 监听错误事件，直接尝试重试
+      viewer.addEventListener('error', () => {
+        retryCount++;
+        if (retryCount <= maxRetries) {
+          console.warn(`模型加载报错，正在重试 ${retryCount} 次...`);
+          loadModel();
+        } else {
+          alert('模型加载失败，请检查网络或稍后重试');
+          viewer.setAttribute('src', defaultModel);
+        }
+      }, { once: true });
     }
+
+    loadModel();
   </script>
 </body>
 </html>
