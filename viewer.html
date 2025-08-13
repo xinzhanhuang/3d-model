@@ -1,40 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <title>模型预览</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 模型预览</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    body { margin: 0; background: #000; }
-    model-viewer {
-      width: 100vw;
-      height: 100vh;
-    }
-    .back-btn {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: white;
-      padding: 10px 15px;
-      border-radius: 5px;
-      text-decoration: none;
-      color: black;
-    }
+    body, html { margin:0; height:100%; }
+    model-viewer { width: 100vw; height: 100vh; }
   </style>
 </head>
 <body>
-  <a class="back-btn" href="index.html">返回</a>
-  <model-viewer id="viewer" ar autoplay camera-controls></model-viewer>
- 
+  <model-viewer id="viewer"
+    alt="3D 模型预览"
+    camera-controls
+    auto-rotate
+    background-color="#455A64"
+    shadow-intensity="1">
+  </model-viewer>
+
   <script>
-    // 从 URL 获取模型路径
-    const params = new URLSearchParams(window.location.search);
-    const modelPath = params.get('model');
- 
+    const urlParams = new URLSearchParams(window.location.search);
+    const modelPath = urlParams.get('model');
     if (modelPath) {
       document.getElementById('viewer').setAttribute('src', modelPath);
     } else {
-      alert('未指定模型路径');
+      document.body.innerHTML = "<h2>未选择模型</h2>";
     }
   </script>
 </body>
