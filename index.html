@@ -1,43 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <title>模型展示</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 模型列表</title>
   <style>
-    body { font-family: sans-serif; text-align: center; }
-    .grid {
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
       max-width: 1000px;
       margin: auto;
     }
-    .item {
-      cursor: pointer;
-    }
-    .item img {
+    .gallery img {
       width: 100%;
-      height: auto;
       border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .gallery img:hover {
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
-  <h1>模型展示</h1>
-  <div class="grid">
-    <div class="item">
-      <a href="viewer.html?model=./models/model1.usdz">
-        <img src="./thumbnails/model1.jpg" alt="模型1">
-        <p>模型 1</p>
-      </a>
-    </div>
-    <div class="item">
-      <a href="viewer.html?model=./models/model2.usdz">
-        <img src="./thumbnails/model2.jpg" alt="模型2">
-        <p>模型 2</p>
-      </a>
-    </div>
-    <!-- 可以继续添加更多 -->
+  <h1>选择一个 3D 模型预览</h1>
+  <div class="gallery">
+    <img src="thumbnails/model1.jpg" onclick="openViewer('models/model1.glb')" alt="模型 1">
+    <img src="thumbnails/model2.jpg" onclick="openViewer('models/model2.glb')" alt="模型 2">
+    <img src="thumbnails/model3.jpg" onclick="openViewer('models/model3.glb')" alt="模型 3">
   </div>
+
+  <script>
+    function openViewer(modelPath) {
+      window.location.href = `viewer.html?model=${encodeURIComponent(modelPath)}`;
+    }
+  </script>
 </body>
 </html>
