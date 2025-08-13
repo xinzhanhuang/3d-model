@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8">
   <title>模型预览</title>
-  <!-- 国内 CDN，稳定访问 -->
   <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     body { margin: 0; background: #000; font-family: sans-serif; }
@@ -12,6 +11,8 @@
       height: 100vh;
       background-color: #000;
     }
+
+    /* 返回按钮 */
     .back-btn {
       position: absolute;
       top: 20px;
@@ -23,48 +24,90 @@
       color: black;
       z-index: 10;
     }
+
+    /* 加载动画容器 */
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+    }
+
+    /* 转圈动画 */
+    .spinner {
+      border: 6px solid rgba(255, 255, 255, 0.2);
+      border-top: 6px solid white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <a class="back-btn" href="index.html">返回</a>
 
-  <model-viewer id="viewer" ar autoplay camera-controls></model-viewer>
+  <!-- 加载动画 -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div>加载中，请稍候...</div>
+  </div>
+
+  <model-viewer id="viewer" ar autoplay camera-controls style="display: none;"></model-viewer>
 
   <script>
     const viewer = document.getElementById('viewer');
+    const loader = document.getElementById('loader');
     const params = new URLSearchParams(window.location.search);
-    const defaultModel = '/models/model1.usdz'; // 默认模型
+    const defaultModel = '/models/model1.usdz';
     const modelPath = params.get('model') || defaultModel;
 
     let retryCount = 0;
-    const maxRetries = 3;  // 最大重试次数
-    const timeout = 5000;  // 5秒没有加载成功就重试
+    const maxRetries = 3;
+    const timeout = 5000;
+
+    function showLoader(show) {
+      loader.style.display = show ? 'flex' : 'none';
+      viewer.style.display = show ? 'none' : 'block';
+    }
 
     function loadModel() {
+      showLoader(true);
       viewer.setAttribute('src', modelPath);
 
       const timer = setTimeout(() => {
-        // 如果模型 src 未加载或加载失败
         if (!viewer.getAttribute('src')) {
           retryCount++;
           if (retryCount <= maxRetries) {
-            console.warn(`模型加载失败，正在重试 ${retryCount} 次...`);
+            console.warn(`模型加载失败，重试 ${retryCount} 次...`);
             loadModel();
           } else {
             alert('模型加载失败，请检查网络或稍后重试');
-            viewer.setAttribute('src', defaultModel); // 尝试加载默认模型
+            viewer.setAttribute('src', defaultModel);
           }
         }
       }, timeout);
 
-      // 模型成功加载时取消定时器
-      viewer.addEventListener('load', () => clearTimeout(timer), { once: true });
+      viewer.addEventListener('load', () => {
+        clearTimeout(timer);
+        showLoader(false); // 加载完成隐藏动画
+      }, { once: true });
 
-      // 监听错误事件，直接尝试重试
       viewer.addEventListener('error', () => {
         retryCount++;
         if (retryCount <= maxRetries) {
-          console.warn(`模型加载报错，正在重试 ${retryCount} 次...`);
+          console.warn(`模型加载报错，重试 ${retryCount} 次...`);
           loadModel();
         } else {
           alert('模型加载失败，请检查网络或稍后重试');
